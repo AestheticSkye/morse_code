@@ -1,5 +1,3 @@
-use heapless::String;
-
 #[derive(Copy, Clone)]
 pub enum Code {
     Some([u8; 5]),
