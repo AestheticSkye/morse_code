@@ -72,14 +72,4 @@ impl Code {
         }
         Code::Error
     }
-
-    pub fn string_to_codes(string: &String<64>) -> [Code; 64] {
-        let mut codes = [Code::None; 64];
-
-        for (index, char) in string.chars().enumerate() {
-            codes[index] = Self::char_to_code(&char)
-        }
-
-        codes
-    }
 }
