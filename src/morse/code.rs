@@ -46,11 +46,13 @@ const CODES: [(char, Code); 36] = [
 ];
 
 impl Code {
-    pub fn code_to_char(code: &[u8; 5]) -> char {
-        for code_set in CODES {
-            if let Code::Some(code_arr) = code_set.1 {
-                if code_arr == *code {
-                    return code_set.0;
+    pub fn to_char(self) -> char {
+        if let Code::Some(codes) = self {
+            for code_set in CODES {
+                if let Code::Some(code_arr) = code_set.1 {
+                    if code_arr == codes {
+                        return code_set.0;
+                    }
                 }
             }
         }

@@ -1,17 +1,21 @@
+use crate::BUFFER_LENGTH;
 use core::fmt::Write;
 use heapless::String;
 use rp2040_hal::usb::UsbBus;
 use usb_device::device::UsbDevice;
 use usbd_serial::SerialPort;
 
-pub fn read(usb_dev: &mut UsbDevice<UsbBus>, serial: &mut SerialPort<UsbBus>) -> String<64> {
+pub fn read(
+    usb_dev: &mut UsbDevice<UsbBus>,
+    serial: &mut SerialPort<UsbBus>,
+) -> String<BUFFER_LENGTH> {
     let mut buffer_index = 0;
-    let mut buffer = [0u8; 64];
+    let mut buffer = [0u8; BUFFER_LENGTH];
     loop {
         if usb_dev.poll(&mut [serial]) {
-            let mut current_buffer = [0u8; 64];
+            let mut current_buffer = [0u8; BUFFER_LENGTH];
             if let Ok(count) = serial.read(&mut current_buffer) {
-                let count = count.min(64 - buffer_index);
+                let count = count.min(BUFFER_LENGTH - buffer_index);
 
                 buffer[buffer_index..(count + buffer_index)]
                     .copy_from_slice(&current_buffer[..count]);
@@ -39,7 +43,7 @@ pub fn read(usb_dev: &mut UsbDevice<UsbBus>, serial: &mut SerialPort<UsbBus>) ->
         }
     }
 
-    fn remove_control_chars(buffer: &mut [u8; 64]) {
+    fn remove_control_chars(buffer: &mut [u8; BUFFER_LENGTH]) {
         for char in buffer.iter_mut() {
             if char == &b'\n' || char == &b'\r' {
                 *char = 0
@@ -49,10 +53,10 @@ pub fn read(usb_dev: &mut UsbDevice<UsbBus>, serial: &mut SerialPort<UsbBus>) ->
 
     fn create_return_string(
         message: &str,
-        mut buffer: [u8; 64],
+        mut buffer: [u8; BUFFER_LENGTH],
         serial: &mut SerialPort<UsbBus>,
-    ) -> String<64> {
-        let mut string = String::<64>::new();
+    ) -> String<BUFFER_LENGTH> {
+        let mut string = String::<BUFFER_LENGTH>::new();
 
         remove_control_chars(&mut buffer);
 
@@ -62,11 +66,11 @@ pub fn read(usb_dev: &mut UsbDevice<UsbBus>, serial: &mut SerialPort<UsbBus>) ->
             }
         }
 
-        let mut formatted_message = String::<128>::new();
+        let mut formatted_message = String::<{ BUFFER_LENGTH * 2 }>::new();
 
         write!(
             &mut formatted_message,
-            "\n{}\nNow encoding '{}' to morse.\n",
+            "\r\n{}\r\nNow encoding '{}' to morse.\r\n",
             message, string
         )
         .unwrap();

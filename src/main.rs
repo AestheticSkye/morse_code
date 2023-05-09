@@ -34,6 +34,8 @@ use cortex_m::delay::Delay;
 use embedded_hal::digital::v2::OutputPin;
 use rp2040_hal::{clocks::Clock, gpio::DynPin, usb::UsbBus, Timer};
 
+const BUFFER_LENGTH: usize = 64;
+
 #[entry]
 fn main() -> ! {
     let mut pac = pac::Peripherals::take().unwrap();
@@ -116,7 +118,7 @@ fn main() -> ! {
         // No clue why this has to be done, but serial wont work without it
         if !initialised && timer.get_counter().ticks() >= 2_000_000 {
             initialised = true;
-            serial.write("Hello World!\n".as_bytes()).unwrap();
+            serial.write("Hello World!\r\n".as_bytes()).unwrap();
         }
 
         usb_dev.poll(&mut [&mut serial]);
@@ -137,7 +139,7 @@ fn main() -> ! {
             // );
 
             serial
-                .write("Please enter the text you wish to encode into morse.\n".as_bytes())
+                .write("Please enter the text you wish to encode into morse.\r\n".as_bytes())
                 .unwrap();
 
             let converted_text = read(&mut usb_dev, &mut serial);
@@ -166,7 +168,7 @@ fn main() -> ! {
                 }
             }
 
-            serial.write(&[b'\n'; 2]).unwrap();
+            serial.write(&[b'\n', b'\r', b'\n', b'\r']).unwrap();
 
             loop {
                 blink_codes(&mut internal_led, &mut delay, &codes)

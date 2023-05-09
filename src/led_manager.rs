@@ -1,11 +1,12 @@
 use crate::morse::code::Code;
+use crate::BUFFER_LENGTH;
 use cortex_m::delay::Delay;
 use embedded_hal::digital::v2::OutputPin;
 use rp2040_hal::gpio::DynPin;
 
 const TIME_UNIT: u32 = 200;
 
-pub fn blink_codes(led: &mut DynPin, delay: &mut Delay, codes: &[Code; 64]) {
+pub fn blink_codes(led: &mut DynPin, delay: &mut Delay, codes: &[Code; BUFFER_LENGTH]) {
     for code in codes {
         match code {
             Code::Some(code) => {
