@@ -1,8 +1,10 @@
 #![no_std]
 #![no_main]
 
-mod led_manager;
+mod button;
+mod led;
 mod morse;
+mod pins;
 mod serial;
 
 // The macro for our start-up function
@@ -26,13 +28,14 @@ use usb_device::{class_prelude::*, prelude::*};
 // USB Communications Class Device support
 use usbd_serial::SerialPort;
 
-use crate::led_manager::blink_codes;
-use crate::morse::code::Code;
-use crate::morse::string_to_codes;
+use crate::button::scan;
+use crate::led::blink_codes;
+use crate::morse::*;
+use crate::pins::PinSet;
 use crate::serial::read;
 use cortex_m::delay::Delay;
-use embedded_hal::digital::v2::OutputPin;
-use rp2040_hal::{clocks::Clock, gpio::DynPin, usb::UsbBus, Timer};
+use embedded_hal::digital::v2::InputPin;
+use rp2040_hal::{clocks::Clock, usb::UsbBus, Timer};
 
 const BUFFER_LENGTH: usize = 64;
 
@@ -58,17 +61,6 @@ fn main() -> ! {
     )
     .ok()
     .unwrap();
-
-    #[cfg(feature = "rp2040-e5")]
-    {
-        let sio = hal::Sio::new(pac.SIO);
-        let _pins = rp_pico::Pins::new(
-            pac.IO_BANK0,
-            pac.PADS_BANK0,
-            sio.gpio_bank0,
-            &mut pac.RESETS,
-        );
-    }
 
     // Set up the USB driver
     let usb_bus = UsbBusAllocator::new(UsbBus::new(
@@ -105,14 +97,15 @@ fn main() -> ! {
     let timer = Timer::new(pac.TIMER, &mut pac.RESETS);
     let mut initialised = false;
 
-    let mut internal_led: DynPin = pins.gpio25.into_push_pull_output().into();
-    let mut letter_led: DynPin = pins.gpio15.into_push_pull_output().into();
-    let mut word_led: DynPin = pins.gpio14.into_push_pull_output().into();
-    let mut short_press_led: DynPin = pins.gpio16.into_push_pull_output().into();
-    let mut long_press_led: DynPin = pins.gpio17.into_push_pull_output().into();
-    let mut phrase_end_led: DynPin = pins.gpio18.into_push_pull_output().into();
-
-    let button: DynPin = pins.gpio13.into_pull_down_input().into();
+    let mut pin_set = PinSet::new(
+        pins.gpio25.into_push_pull_output().into(),
+        pins.gpio15.into_push_pull_output().into(),
+        pins.gpio14.into_push_pull_output().into(),
+        pins.gpio16.into_push_pull_output().into(),
+        pins.gpio17.into_push_pull_output().into(),
+        pins.gpio18.into_push_pull_output().into(),
+        pins.gpio13.into_pull_down_input().into(),
+    );
 
     loop {
         // No clue why this has to be done, but serial wont work without it
@@ -124,67 +117,38 @@ fn main() -> ! {
         usb_dev.poll(&mut [&mut serial]);
 
         if initialised {
-            // delay.delay_ms(2000);
-            // serial.write("test".as_bytes()).unwrap();
-            // test_lights(
-            //     &mut [
-            //         &mut letter_led,
-            //         &mut word_led,
-            //         &mut short_press_led,
-            //         &mut long_press_led,
-            //         &mut phrase_end_led,
-            //         &mut internal_led,
-            //     ],
-            //     &mut delay,
-            // );
+            // serial
+            //     .write("Please enter the text you wish to encode into morse.\r\n".as_bytes())
+            //     .unwrap();
+            //
+            // let converted_text = read(&mut usb_dev, &mut serial);
+            //
+            // let codes = string_to_codes(&converted_text);
+            //
+            // serial.write(to_marks(&codes).as_bytes()).unwrap();
+            //
+            // // carriage return and line feed dont get written without delay ¯\_(ツ)_/¯
+            // delay.delay_us(1);
+            //
+            // serial.write(&[b'\n', b'\r', b'\n', b'\r']).unwrap();
+            //
+            // loop {
+            //     blink_codes(&mut internal_light, &mut delay, &codes)
+            // }
 
-            serial
-                .write("Please enter the text you wish to encode into morse.\r\n".as_bytes())
-                .unwrap();
+            while pin_set.button.is_low().unwrap() {}
 
-            let converted_text = read(&mut usb_dev, &mut serial);
+            let codes = scan(&mut pin_set, &mut delay, &mut serial);
 
-            let codes = string_to_codes(&converted_text);
+            // serial.write(to_marks(&codes).as_bytes()).unwrap();
 
-            for code in codes {
-                match code {
-                    Code::Some(code) => {
-                        for code in code {
-                            if code == 1 {
-                                serial.write(".".as_bytes()).unwrap();
-                            } else if code == 2 {
-                                serial.write("-".as_bytes()).unwrap();
-                            }
-                        }
-                        serial.write(" ".as_bytes()).unwrap();
-                    }
-                    Code::Space => {
-                        serial.write("  ".as_bytes()).unwrap();
-                    }
-                    Code::Error => {
-                        serial.write("%".as_bytes()).unwrap();
-                    }
-                    Code::None => {}
-                }
-            }
+            serial.write(&[b'\n', b'\r']).unwrap();
 
-            serial.write(&[b'\n', b'\r', b'\n', b'\r']).unwrap();
+            serial.write(codes_to_string(&codes).as_bytes()).unwrap();
 
             loop {
-                blink_codes(&mut internal_led, &mut delay, &codes)
+                blink_codes(&mut pin_set.internal_led, &mut delay, &codes)
             }
         }
-    }
-}
-
-fn test_lights(lights: &mut [&mut DynPin; 6], delay: &mut Delay) {
-    for light in lights.iter_mut() {
-        light.set_high().unwrap();
-        delay.delay_ms(150)
-    }
-
-    for light in lights {
-        light.set_low().unwrap();
-        delay.delay_ms(150)
     }
 }
