@@ -20,11 +20,13 @@ use usb_device::{class_prelude::UsbBusAllocator, prelude::*};
 use usbd_serial::SerialPort;
 
 // Imports for main logic
-use crate::button::scan;
-use crate::led::blink_codes;
-use crate::morse::{codes_to_string, string_to_codes, to_marks};
-use crate::pins::PinSet;
-use crate::serial::read;
+use crate::{
+	button::scan,
+	led::blink_codes,
+	morse::{codes_to_string, string_to_codes, to_marks},
+	pins::PinSet,
+	serial::read,
+};
 
 const BUFFER_LENGTH: usize = 64;
 

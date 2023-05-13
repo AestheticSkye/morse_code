@@ -2,13 +2,13 @@ use embedded_hal::digital::v2::OutputPin;
 use rp2040_hal::gpio::DynPin;
 
 pub struct PinSet {
-	pub internal_led: DynPin,
-	pub letter_led: DynPin,
-	pub word_led: DynPin,
+	pub internal_led:    DynPin,
+	pub letter_led:      DynPin,
+	pub word_led:        DynPin,
 	pub short_press_led: DynPin,
-	pub long_press_led: DynPin,
+	pub long_press_led:  DynPin,
 	pub passage_end_led: DynPin,
-	pub button: DynPin,
+	pub button:          DynPin,
 }
 
 impl PinSet {

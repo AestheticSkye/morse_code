@@ -1,12 +1,17 @@
-use crate::morse::code::Mark::{Dash, Dot};
-use crate::morse::code::{Code, Mark};
-use crate::pins::PinSet;
-use crate::BUFFER_LENGTH;
 use cortex_m::delay::Delay;
 use embedded_hal::digital::v2::{InputPin, OutputPin};
 use heapless::Vec;
 use rp2040_hal::usb::UsbBus;
 use usbd_serial::SerialPort;
+
+use crate::{
+	morse::code::{
+		Code, Mark,
+		Mark::{Dash, Dot},
+	},
+	pins::PinSet,
+	BUFFER_LENGTH,
+};
 
 const LONG_PRESS_LENGTH: u32 = 500;
 const PASSAGE_END_LENGTH: u32 = 1500;
@@ -23,7 +28,6 @@ const WORD_TIME_LENGTH: u32 = 2000;
 ///
 /// # Returns
 /// * `[Code; BUFFER_LENGTH]` - The morse code buffer
-///
 pub fn scan(
 	pin_set: &mut PinSet,
 	delay: &mut Delay,

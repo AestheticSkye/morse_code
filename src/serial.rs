@@ -1,9 +1,11 @@
-use crate::BUFFER_LENGTH;
 use core::fmt::Write;
+
 use heapless::String;
 use rp2040_hal::usb::UsbBus;
 use usb_device::device::UsbDevice;
 use usbd_serial::SerialPort;
+
+use crate::BUFFER_LENGTH;
 
 /// Reads from the serial port and returns the string
 ///
