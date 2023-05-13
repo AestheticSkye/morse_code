@@ -110,18 +110,25 @@ fn main() -> ! {
             let mut current_on = 0;
 
             serial
-                .write(
-                    "Press button to select serial mode.\nHold button to select button mode."
-                        .as_bytes(),
-                )
+                .write(b"Press button to select button mode.")
                 .unwrap();
+
+            new_line(&mut serial, &mut delay);
+
+            serial.write(b"Hold button to select serial mode.").unwrap();
+
+            new_line(&mut serial, &mut delay);
 
             loop {
                 if pin_set.button.is_high().unwrap() {
                     current_on += 1;
+                    if current_on == 300 {
+                        serial.write(b"Serial mode selected.\n\r").unwrap();
+                    }
                 } else if current_on > 300 {
                     run_serial(&mut pin_set, &mut delay, &mut serial, &mut usb_dev);
-                } else if current_on > 1 {
+                } else if current_on > 0 {
+                    serial.write(b"Button mode selected.\n\r").unwrap();
                     run_button(&mut pin_set, &mut delay, &mut serial);
                 }
                 delay.delay_ms(1);
@@ -131,6 +138,10 @@ fn main() -> ! {
 }
 
 fn run_button(pin_set: &mut PinSet, delay: &mut Delay, serial: &mut SerialPort<UsbBus>) {
+    serial
+        .write(b"Please press the button to start your message\r\n")
+        .unwrap();
+
     while pin_set.button.is_low().unwrap() {}
 
     let codes = scan(pin_set, delay, serial);
@@ -153,7 +164,7 @@ fn run_serial(
     usb_dev: &mut UsbDevice<UsbBus>,
 ) {
     serial
-        .write("Please enter the text you wish to encode into morse.\r\n".as_bytes())
+        .write(b"Please enter the text you wish to encode into morse.\r\n")
         .unwrap();
 
     let converted_text = read(usb_dev, serial);
@@ -171,6 +182,6 @@ fn run_serial(
 
 fn new_line(serial: &mut SerialPort<UsbBus>, delay: &mut Delay) {
     // Delays buy smallest time possible as without sometimes serial doesnt write properly
-    delay.delay_us(1);
+    delay.delay_ms(1);
     serial.write(&[b'\n', b'\r']).unwrap();
 }

@@ -166,6 +166,10 @@ const CODES: [(char, Code); 37] = [
 impl Code {
     /// Converts a morse code to a character
     pub fn to_char(self) -> char {
+        if self == Self::Space {
+            return ' ';
+        }
+
         let Self::Some(marks) = self else {
             return '%'
         };
@@ -184,10 +188,8 @@ impl Code {
     /// Converts a character to a morse code
     pub fn char_to_code(character: char) -> Self {
         for code_set in CODES {
-            if let Self::Some(_) = code_set.1 {
-                if code_set.0 == character {
-                    return code_set.1;
-                }
+            if code_set.0 == character {
+                return code_set.1;
             }
         }
         Self::Error

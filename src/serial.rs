@@ -52,18 +52,6 @@ pub fn read(
     }
 }
 
-/// Removes the control characters from the buffer
-///
-/// # Arguments
-/// * `buffer` - The buffer to remove the control characters from
-fn remove_control_chars(buffer: &mut [u8; BUFFER_LENGTH]) {
-    for char in buffer.iter_mut() {
-        if char == &b'\n' || char == &b'\r' {
-            *char = 0;
-        }
-    }
-}
-
 /// Creates the return string for the serial port & writes a message to the serial port
 ///
 /// # Arguments
@@ -80,11 +68,14 @@ fn create_return_string(
 ) -> String<BUFFER_LENGTH> {
     let mut string = String::<BUFFER_LENGTH>::new();
 
-    remove_control_chars(&mut buffer);
-
-    for byte in buffer {
-        if byte != 0 {
-            string.push(byte as char).unwrap();
+    for byte in buffer.iter_mut() {
+        // Remove linefeed and carriage return
+        if byte == &b'\n' || byte == &b'\r' {
+            *byte = 0;
+        }
+        // Add to string
+        if *byte != 0 {
+            string.push(*byte as char).unwrap();
         }
     }
 
