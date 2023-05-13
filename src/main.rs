@@ -9,7 +9,7 @@ mod serial;
 
 // Imports for initialization
 use cortex_m::delay::Delay;
-use embedded_hal::digital::v2::{InputPin, OutputPin};
+use embedded_hal::digital::v2::InputPin;
 use panic_halt as _;
 use rp_pico::{
     entry,
@@ -105,7 +105,25 @@ fn main() -> ! {
         usb_dev.poll(&mut [&mut serial]);
 
         if initialised {
-            run_button(&mut pin_set, &mut delay, &mut serial);
+            let mut current_on = 0;
+
+            serial
+                .write(
+                    "Press button to select serial mode.\nHold button to select button mode."
+                        .as_bytes(),
+                )
+                .unwrap();
+
+            loop {
+                if pin_set.button.is_high().unwrap() {
+                    current_on += 1
+                } else if current_on > 300 {
+                    run_serial(&mut pin_set, &mut delay, &mut serial, &mut usb_dev)
+                } else if current_on > 1 {
+                    run_button(&mut pin_set, &mut delay, &mut serial);
+                }
+                delay.delay_ms(1)
+            }
         }
     }
 }
