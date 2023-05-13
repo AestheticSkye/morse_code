@@ -3,25 +3,22 @@
 #![warn(clippy::all, clippy::pedantic, clippy::nursery)]
 
 mod button;
+mod initialization;
 mod led;
 mod morse;
 mod pins;
 mod serial;
 
-// Imports for initialization
 use cortex_m::delay::Delay;
 use embedded_hal::digital::v2::InputPin;
-use panic_halt as _;
-use rp_pico::{
-	entry,
-	hal::{self, clocks::Clock, pac, usb::UsbBus, Timer, Watchdog},
-};
-use usb_device::{class_prelude::UsbBusAllocator, prelude::*};
+use rp2040_hal::usb::UsbBus;
+use rp_pico::entry;
+use usb_device::device::UsbDevice;
 use usbd_serial::SerialPort;
 
-// Imports for main logic
 use crate::{
 	button::scan,
+	initialization::{initialize_system, initialize_usb},
 	led::blink_codes,
 	morse::{codes_to_string, string_to_codes, to_marks},
 	pins::PinSet,
@@ -32,72 +29,10 @@ const BUFFER_LENGTH: usize = 64;
 
 #[entry]
 fn main() -> ! {
-	let mut pac = pac::Peripherals::take().unwrap();
-	let core = pac::CorePeripherals::take().unwrap();
-
-	// Set up the watchdog driver - needed by the clock setup code
-	let mut watchdog = Watchdog::new(pac.WATCHDOG);
-
-	// Configure the clocks
-	//
-	// The default is to generate a 125 MHz system clock
-	let clocks = hal::clocks::init_clocks_and_plls(
-		rp_pico::XOSC_CRYSTAL_FREQ,
-		pac.XOSC,
-		pac.CLOCKS,
-		pac.PLL_SYS,
-		pac.PLL_USB,
-		&mut pac.RESETS,
-		&mut watchdog,
-	)
-	.ok()
-	.unwrap();
-
-	// Set up the USB driver
-	let usb_bus = UsbBusAllocator::new(UsbBus::new(
-		pac.USBCTRL_REGS,
-		pac.USBCTRL_DPRAM,
-		clocks.usb_clock,
-		true,
-		&mut pac.RESETS,
-	));
-
-	// Set up the USB Communications Class Device driver
-	let mut serial = SerialPort::new(&usb_bus);
-
-	// Create a USB device with a fake VID and PID
-	let mut usb_dev = UsbDeviceBuilder::new(&usb_bus, UsbVidPid(0x16c0, 0x27dd))
-		.manufacturer("Fake company")
-		.product("Serial port")
-		.serial_number("TEST")
-		.device_class(2) // from: https://www.usb.org/defined-class-codes
-		.build();
-
-	let mut delay = Delay::new(core.SYST, clocks.system_clock.freq().to_Hz());
-
-	// The single-cycle I/O block controls our GPIO pins
-	let sio = hal::Sio::new(pac.SIO);
-	// Set the pins to their default state
-	let pins = hal::gpio::Pins::new(
-		pac.IO_BANK0,
-		pac.PADS_BANK0,
-		sio.gpio_bank0,
-		&mut pac.RESETS,
-	);
-
-	let timer = Timer::new(pac.TIMER, &mut pac.RESETS);
-
-	let mut pin_set = PinSet::new(
-		pins.gpio25.into_push_pull_output().into(),
-		pins.gpio15.into_push_pull_output().into(),
-		pins.gpio14.into_push_pull_output().into(),
-		pins.gpio16.into_push_pull_output().into(),
-		pins.gpio17.into_push_pull_output().into(),
-		pins.gpio18.into_push_pull_output().into(),
-		pins.gpio13.into_pull_down_input().into(),
-	);
-
 	let mut initialised = false;
+
+	let (usb_bus, mut delay, timer, mut pin_set) = initialize_system();
+	let (mut serial, mut usb_dev) = initialize_usb(&usb_bus);
 
 	loop {
 		// No clue why this has to be done, but serial wont work without it
