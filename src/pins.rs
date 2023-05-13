@@ -12,6 +12,7 @@ pub struct PinSet {
 }
 
 impl PinSet {
+	#[must_use]
 	pub const fn new(
 		internal_led: DynPin,
 		letter_led: DynPin,
@@ -33,6 +34,7 @@ impl PinSet {
 	}
 
 	/// Turn all LEDs off
+	#[allow(clippy::missing_panics_doc)]
 	pub fn leds_off(&mut self) {
 		self.passage_end_led.set_low().unwrap();
 		self.word_led.set_low().unwrap();

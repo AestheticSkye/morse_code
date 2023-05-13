@@ -1,7 +1,6 @@
 mod button;
 mod led;
 mod morse;
-pub mod pins;
 mod serial;
 
 use cortex_m::delay::Delay;
@@ -11,17 +10,17 @@ use usb_device::device::UsbDevice;
 use usbd_serial::SerialPort;
 
 use crate::{
-	modes::{
+	new_line,
+	pins::PinSet,
+	run::{
 		button::scan,
 		led::blink_codes,
 		morse::{codes_to_string, string_to_codes, to_marks},
-		pins::PinSet,
 		serial::read,
 	},
-	new_line,
 };
 
-pub fn run_button(pin_set: &mut PinSet, delay: &mut Delay, serial: &mut SerialPort<UsbBus>) {
+pub fn button_mode(pin_set: &mut PinSet, delay: &mut Delay, serial: &mut SerialPort<UsbBus>) {
 	serial
 		.write(b"Please press the button to start your message\r\n")
 		.unwrap();
@@ -41,7 +40,7 @@ pub fn run_button(pin_set: &mut PinSet, delay: &mut Delay, serial: &mut SerialPo
 	}
 }
 
-pub fn run_serial(
+pub fn serial_mode(
 	pin_set: &mut PinSet,
 	delay: &mut Delay,
 	serial: &mut SerialPort<UsbBus>,

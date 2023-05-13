@@ -3,7 +3,8 @@
 #![warn(clippy::all, clippy::pedantic, clippy::nursery)]
 
 mod initialization;
-mod modes;
+mod pins;
+mod run;
 
 use cortex_m::delay::Delay;
 use embedded_hal::digital::v2::InputPin;
@@ -13,7 +14,7 @@ use usbd_serial::SerialPort;
 
 use crate::{
 	initialization::{initialize_system, initialize_usb},
-	modes::{run_button, run_serial},
+	run::{button_mode, serial_mode},
 };
 
 const BUFFER_LENGTH: usize = 64;
@@ -54,10 +55,10 @@ fn main() -> ! {
 						serial.write(b"Serial mode selected.\n\r").unwrap();
 					}
 				} else if current_on > 300 {
-					run_serial(&mut pin_set, &mut delay, &mut serial, &mut usb_dev);
+					serial_mode(&mut pin_set, &mut delay, &mut serial, &mut usb_dev);
 				} else if current_on > 0 {
 					serial.write(b"Button mode selected.\n\r").unwrap();
-					run_button(&mut pin_set, &mut delay, &mut serial);
+					button_mode(&mut pin_set, &mut delay, &mut serial);
 				}
 				delay.delay_ms(1);
 			}
