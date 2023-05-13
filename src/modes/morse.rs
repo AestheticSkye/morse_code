@@ -3,7 +3,7 @@ pub mod code;
 use heapless::String;
 
 use crate::{
-	morse::code::{Code, Mark},
+	modes::morse::code::{Code, Mark},
 	BUFFER_LENGTH,
 };
 

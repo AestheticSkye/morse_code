@@ -3,7 +3,7 @@ use embedded_hal::digital::v2::OutputPin;
 use rp2040_hal::gpio::DynPin;
 
 use crate::{
-	morse::code::{Code, Mark},
+	modes::morse::code::{Code, Mark},
 	BUFFER_LENGTH,
 };
 

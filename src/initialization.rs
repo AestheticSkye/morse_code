@@ -5,7 +5,7 @@ use rp_pico::hal::{self, clocks::Clock, pac, usb::UsbBus, Timer, Watchdog};
 use usb_device::{class_prelude::UsbBusAllocator, prelude::*};
 use usbd_serial::SerialPort;
 
-use crate::pins::PinSet;
+use crate::modes::pins::PinSet;
 
 pub fn initialize_system() -> (UsbBusAllocator<UsbBus>, Delay, Timer, PinSet) {
 	let mut pac = pac::Peripherals::take().unwrap();

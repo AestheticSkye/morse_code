@@ -5,11 +5,13 @@ use rp2040_hal::usb::UsbBus;
 use usbd_serial::SerialPort;
 
 use crate::{
-	morse::code::{
-		Code, Mark,
-		Mark::{Dash, Dot},
+	modes::{
+		morse::code::{
+			Code, Mark,
+			Mark::{Dash, Dot},
+		},
+		pins::PinSet,
 	},
-	pins::PinSet,
 	BUFFER_LENGTH,
 };
 
