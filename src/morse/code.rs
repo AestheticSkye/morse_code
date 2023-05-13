@@ -15,7 +15,8 @@ pub enum Code {
     None,
 }
 
-const CODES: [(char, Code); 36] = [
+const CODES: [(char, Code); 37] = [
+    (' ', Code::Space),
     (
         'a',
         Code::Some([Mark::Dot, Mark::Dash, Mark::None, Mark::None, Mark::None]),
@@ -182,9 +183,6 @@ impl Code {
 
     /// Converts a character to a morse code
     pub fn char_to_code(character: char) -> Self {
-        if character == ' ' {
-            return Self::Space;
-        }
         for code_set in CODES {
             if let Self::Some(_) = code_set.1 {
                 if code_set.0 == character {
