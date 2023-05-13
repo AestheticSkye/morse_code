@@ -35,9 +35,12 @@ pub fn scan(
                 &mut current_mark,
                 &mut passage_ended,
                 pin_set,
-            )
+            );
         } else {
             if passage_ended {
+                if !current_code.is_empty() {
+                    handle_letter(&mut codes, &mut current_code, pin_set);
+                }
                 break;
             }
 

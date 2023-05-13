@@ -7,25 +7,15 @@ mod morse;
 mod pins;
 mod serial;
 
-// The macro for our start-up function
-use rp_pico::entry;
-
-// Ensure we halt the program on panic (if we don't mention this crate it won't
-// be linked)
+// Imports for initialization
+use cortex_m::delay::Delay;
+use embedded_hal::digital::v2::{InputPin, OutputPin};
 use panic_halt as _;
-
-// A shorter alias for the Peripheral Access Crate, which provides low-level
-// register access
-use rp_pico::hal::pac;
-
-// A shorter alias for the Hardware Abstraction Layer, which provides
-// higher-level drivers.
-use rp_pico::hal;
-
-// USB Device support
+use rp_pico::{
+    entry,
+    hal::{self, clocks::Clock, pac, usb::UsbBus, Timer, Watchdog},
+};
 use usb_device::{class_prelude::*, prelude::*};
-
-// USB Communications Class Device support
 use usbd_serial::SerialPort;
 
 use crate::button::scan;
@@ -33,9 +23,6 @@ use crate::led::blink_codes;
 use crate::morse::*;
 use crate::pins::PinSet;
 use crate::serial::read;
-use cortex_m::delay::Delay;
-use embedded_hal::digital::v2::InputPin;
-use rp2040_hal::{clocks::Clock, usb::UsbBus, Timer};
 
 const BUFFER_LENGTH: usize = 64;
 
@@ -45,7 +32,7 @@ fn main() -> ! {
     let core = pac::CorePeripherals::take().unwrap();
 
     // Set up the watchdog driver - needed by the clock setup code
-    let mut watchdog = hal::Watchdog::new(pac.WATCHDOG);
+    let mut watchdog = Watchdog::new(pac.WATCHDOG);
 
     // Configure the clocks
     //
@@ -95,7 +82,6 @@ fn main() -> ! {
     );
 
     let timer = Timer::new(pac.TIMER, &mut pac.RESETS);
-    let mut initialised = false;
 
     let mut pin_set = PinSet::new(
         pins.gpio25.into_push_pull_output().into(),
@@ -106,6 +92,8 @@ fn main() -> ! {
         pins.gpio18.into_push_pull_output().into(),
         pins.gpio13.into_pull_down_input().into(),
     );
+
+    let mut initialised = false;
 
     loop {
         // No clue why this has to be done, but serial wont work without it
@@ -133,16 +121,12 @@ fn main() -> ! {
             // serial.write(&[b'\n', b'\r', b'\n', b'\r']).unwrap();
             //
             // loop {
-            //     blink_codes(&mut internal_light, &mut delay, &codes)
+            //     blink_codes(&mut pin_set.internal_led, &mut delay, &codes)
             // }
 
             while pin_set.button.is_low().unwrap() {}
 
             let codes = scan(&mut pin_set, &mut delay, &mut serial);
-
-            // serial.write(to_marks(&codes).as_bytes()).unwrap();
-
-            serial.write(&[b'\n', b'\r']).unwrap();
 
             serial.write(codes_to_string(&codes).as_bytes()).unwrap();
 
