@@ -105,34 +105,51 @@ fn main() -> ! {
         usb_dev.poll(&mut [&mut serial]);
 
         if initialised {
-            // serial
-            //     .write("Please enter the text you wish to encode into morse.\r\n".as_bytes())
-            //     .unwrap();
-            //
-            // let converted_text = read(&mut usb_dev, &mut serial);
-            //
-            // let codes = string_to_codes(&converted_text);
-            //
-            // serial.write(to_marks(&codes).as_bytes()).unwrap();
-            //
-            // // carriage return and line feed dont get written without delay ¯\_(ツ)_/¯
-            // delay.delay_us(1);
-            //
-            // serial.write(&[b'\n', b'\r', b'\n', b'\r']).unwrap();
-            //
-            // loop {
-            //     blink_codes(&mut pin_set.internal_led, &mut delay, &codes)
-            // }
-
-            while pin_set.button.is_low().unwrap() {}
-
-            let codes = scan(&mut pin_set, &mut delay, &mut serial);
-
-            serial.write(codes_to_string(&codes).as_bytes()).unwrap();
-
-            loop {
-                blink_codes(&mut pin_set.internal_led, &mut delay, &codes)
-            }
+            run_button(&mut pin_set, &mut delay, &mut serial);
         }
+    }
+}
+
+fn run_button(pin_set: &mut PinSet, delay: &mut Delay, serial: &mut SerialPort<UsbBus>) {
+    while pin_set.button.is_low().unwrap() {}
+
+    let codes = scan(pin_set, delay, serial);
+
+    serial.write(&[b'\n', b'\r']).unwrap();
+
+    serial.write(codes_to_string(&codes).as_bytes()).unwrap();
+
+    delay.delay_us(1);
+
+    serial.write(&[b'\n', b'\r']).unwrap();
+
+    loop {
+        blink_codes(&mut pin_set.internal_led, delay, &codes)
+    }
+}
+
+fn run_serial(
+    pin_set: &mut PinSet,
+    delay: &mut Delay,
+    serial: &mut SerialPort<UsbBus>,
+    usb_dev: &mut UsbDevice<UsbBus>,
+) {
+    serial
+        .write("Please enter the text you wish to encode into morse.\r\n".as_bytes())
+        .unwrap();
+
+    let converted_text = read(usb_dev, serial);
+
+    let codes = string_to_codes(&converted_text);
+
+    serial.write(to_marks(&codes).as_bytes()).unwrap();
+
+    // carriage return and line feed dont get written without delay ¯\_(ツ)_/¯
+    delay.delay_us(1);
+
+    serial.write(&[b'\n', b'\r', b'\n', b'\r']).unwrap();
+
+    loop {
+        blink_codes(&mut pin_set.internal_led, delay, &codes)
     }
 }

@@ -1,4 +1,4 @@
-use crate::morse::code::Code;
+use crate::morse::code::{Code, Mark};
 use crate::BUFFER_LENGTH;
 use cortex_m::delay::Delay;
 use embedded_hal::digital::v2::OutputPin;
@@ -10,13 +10,15 @@ pub fn blink_codes(led: &mut DynPin, delay: &mut Delay, codes: &[Code; BUFFER_LE
     for code in codes {
         match code {
             Code::Some(code) => {
-                for code_number in code {
-                    if *code_number == 1 {
-                        // Standard says 1 unit for `dot`
-                        cycle_led(led, delay, TIME_UNIT);
-                    } else if *code_number == 2 {
-                        // Standard says 3 units for `dash`
-                        cycle_led(led, delay, TIME_UNIT * 3);
+                for mark in code {
+                    match mark {
+                        Mark::Dot => {
+                            cycle_led(led, delay, TIME_UNIT);
+                        }
+                        Mark::Dash => {
+                            cycle_led(led, delay, TIME_UNIT * 3);
+                        }
+                        Mark::None => {}
                     }
                 }
                 // Standard says 3 units for inter-element, a one unit delay already done when mark was deactivated.

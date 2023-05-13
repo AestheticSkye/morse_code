@@ -1,4 +1,5 @@
-use crate::morse::code::Code;
+use crate::morse::code::Mark::{Dash, Dot};
+use crate::morse::code::{Code, Mark};
 use crate::pins::PinSet;
 use crate::BUFFER_LENGTH;
 use cortex_m::delay::Delay;
@@ -19,8 +20,8 @@ pub fn scan(
     serial: &mut SerialPort<UsbBus>,
 ) -> [Code; BUFFER_LENGTH] {
     let mut codes: Vec<Code, BUFFER_LENGTH> = Vec::new();
-    let mut current_code: Vec<u8, 5> = Vec::new();
-    let mut current_mark: u8 = 0;
+    let mut current_code: Vec<Mark, 5> = Vec::new();
+    let mut current_mark: Mark = Mark::None;
 
     let mut button_on_time: u32 = 0;
     let mut button_off_time: u32 = 0;
@@ -75,15 +76,15 @@ pub fn scan(
 fn button_on_event(
     button_on_time: &mut u32,
     button_off_time: &mut u32,
-    current_mark: &mut u8,
+    current_mark: &mut Mark,
     passage_ended: &mut bool,
     pin_set: &mut PinSet,
 ) {
     pin_set.short_press_led.set_high().unwrap();
-    *current_mark = 1;
+    *current_mark = Dot;
     if *button_on_time > LONG_PRESS_LENGTH {
         pin_set.long_press_led.set_high().unwrap();
-        *current_mark = 2
+        *current_mark = Dash
     }
     if *button_on_time > PASSAGE_END_LENGTH {
         pin_set.passage_end_led.set_high().unwrap();
@@ -103,8 +104,8 @@ fn button_on_event(
 
 /// Handles button release event for adding mark to current letter
 fn handle_mark(
-    current_code: &mut Vec<u8, 5>,
-    current_mark: &mut u8,
+    current_code: &mut Vec<Mark, 5>,
+    current_mark: &mut Mark,
     codes: &mut Vec<Code, BUFFER_LENGTH>,
     serial: &mut SerialPort<UsbBus>,
 ) {
@@ -112,10 +113,14 @@ fn handle_mark(
         codes.push(Code::Error).unwrap();
         *current_code = Vec::new();
     } else {
-        if *current_mark == 1 {
-            serial.write(".".as_bytes()).unwrap();
-        } else if *current_mark == 2 {
-            serial.write("-".as_bytes()).unwrap();
+        match *current_mark {
+            Dot => {
+                serial.write(".".as_bytes()).unwrap();
+            }
+            Dash => {
+                serial.write("-".as_bytes()).unwrap();
+            }
+            _ => {}
         }
         current_code.push(*current_mark).unwrap();
     }
@@ -124,14 +129,14 @@ fn handle_mark(
 /// Handles button release event for finishing letter
 fn handle_letter(
     codes: &mut Vec<Code, BUFFER_LENGTH>,
-    current_code: &mut Vec<u8, 5>,
+    current_code: &mut Vec<Mark, 5>,
     pin_set: &mut PinSet,
 ) {
     pin_set.letter_led.set_high().unwrap();
 
     // Fills rest of vec to be able to convert to array
     while !current_code.is_full() {
-        current_code.push(0).unwrap();
+        current_code.push(Mark::None).unwrap();
     }
 
     codes

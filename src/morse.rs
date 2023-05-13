@@ -32,10 +32,14 @@ pub fn to_marks(codes: &[Code; BUFFER_LENGTH]) -> String<BUFFER_LENGTH> {
         match code {
             Code::Some(code) => {
                 for byte in code {
-                    if *byte == 1 {
-                        string.push('.').unwrap();
-                    } else if *byte == 2 {
-                        string.push('-').unwrap();
+                    match byte {
+                        Mark::Dot => {
+                            string.push('.').unwrap();
+                        }
+                        Mark::Dash => {
+                            string.push('-').unwrap();
+                        }
+                        Mark::None => {}
                     }
                 }
                 string.push(' ').unwrap();
