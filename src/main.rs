@@ -134,13 +134,11 @@ fn run_button(pin_set: &mut PinSet, delay: &mut Delay, serial: &mut SerialPort<U
 
     let codes = scan(pin_set, delay, serial);
 
-    serial.write(&[b'\n', b'\r']).unwrap();
+    new_line(serial, delay);
 
     serial.write(codes_to_string(&codes).as_bytes()).unwrap();
 
-    delay.delay_us(1);
-
-    serial.write(&[b'\n', b'\r']).unwrap();
+    new_line(serial, delay);
 
     loop {
         blink_codes(&mut pin_set.internal_led, delay, &codes);
@@ -163,12 +161,15 @@ fn run_serial(
 
     serial.write(to_marks(&codes).as_bytes()).unwrap();
 
-    // carriage return and line feed dont get written without delay ¯\_(ツ)_/¯
-    delay.delay_us(1);
-
-    serial.write(&[b'\n', b'\r', b'\n', b'\r']).unwrap();
+    new_line(serial, delay);
 
     loop {
         blink_codes(&mut pin_set.internal_led, delay, &codes);
     }
+}
+
+fn new_line(serial: &mut SerialPort<UsbBus>, delay: &mut Delay) {
+    // Delays buy smallest time possible as without sometimes serial doesnt write properly
+    delay.delay_us(1);
+    serial.write(&[b'\n', b'\r']).unwrap();
 }
