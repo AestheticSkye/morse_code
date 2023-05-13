@@ -19,6 +19,7 @@ use rp_pico::{
 use usb_device::{class_prelude::UsbBusAllocator, prelude::*};
 use usbd_serial::SerialPort;
 
+// Imports for main logic
 use crate::button::scan;
 use crate::led::blink_codes;
 use crate::morse::{codes_to_string, string_to_codes, to_marks};

@@ -6,6 +6,13 @@ use rp2040_hal::gpio::DynPin;
 
 const TIME_UNIT: u32 = 200;
 
+/// Blink led based on provided morse code
+///
+/// # Arguments
+/// * `led` - The LED to blink
+/// * `delay` - The system delay
+/// * `codes` - The morse code to blink
+///
 pub fn blink_codes(led: &mut DynPin, delay: &mut Delay, codes: &[Code; BUFFER_LENGTH]) {
     for code in codes {
         match code {
@@ -33,6 +40,7 @@ pub fn blink_codes(led: &mut DynPin, delay: &mut Delay, codes: &[Code; BUFFER_LE
     }
 }
 
+/// Cycles an LED on and off for a specified duration
 fn cycle_led(led: &mut DynPin, delay: &mut Delay, duration: u32) {
     led.set_high().unwrap();
     delay.delay_ms(duration);

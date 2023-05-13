@@ -14,6 +14,16 @@ const PASSAGE_END_LENGTH: u32 = 1500;
 const LETTER_TIME_LENGTH: u32 = 1000;
 const WORD_TIME_LENGTH: u32 = 2000;
 
+/// Scans the button for input and returns a morse code buffer
+///
+/// # Arguments
+/// * `pin_set` - The pins to use for input and output
+/// * `delay` - The system delay
+/// * `serial` - The serial port
+///
+/// # Returns
+/// * `[Code; BUFFER_LENGTH]` - The morse code buffer
+///
 pub fn scan(
     pin_set: &mut PinSet,
     delay: &mut Delay,

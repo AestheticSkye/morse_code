@@ -32,6 +32,7 @@ impl PinSet {
         }
     }
 
+    /// Turn all LEDs off
     pub fn leds_off(&mut self) {
         self.passage_end_led.set_low().unwrap();
         self.word_led.set_low().unwrap();

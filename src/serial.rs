@@ -5,6 +5,14 @@ use rp2040_hal::usb::UsbBus;
 use usb_device::device::UsbDevice;
 use usbd_serial::SerialPort;
 
+/// Reads from the serial port and returns the string
+///
+/// # Arguments
+/// * `usb_dev` - The USB device
+/// * `serial` - The serial port
+///
+/// # Returns
+/// * `String<BUFFER_LENGTH>` - The string read from the serial port
 pub fn read(
     usb_dev: &mut UsbDevice<UsbBus>,
     serial: &mut SerialPort<UsbBus>,
@@ -44,6 +52,10 @@ pub fn read(
     }
 }
 
+/// Removes the control characters from the buffer
+///
+/// # Arguments
+/// * `buffer` - The buffer to remove the control characters from
 fn remove_control_chars(buffer: &mut [u8; BUFFER_LENGTH]) {
     for char in buffer.iter_mut() {
         if char == &b'\n' || char == &b'\r' {
@@ -52,6 +64,15 @@ fn remove_control_chars(buffer: &mut [u8; BUFFER_LENGTH]) {
     }
 }
 
+/// Creates the return string for the serial port & writes a message to the serial port
+///
+/// # Arguments
+/// * `message` - The message to write
+/// * `buffer` - The buffer to convert to a string
+/// * `serial` - The serial port
+///
+/// # Returns
+/// * `String<BUFFER_LENGTH>` - The string to return
 fn create_return_string(
     message: &str,
     mut buffer: [u8; BUFFER_LENGTH],

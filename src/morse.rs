@@ -4,6 +4,7 @@ use crate::morse::code::{Code, Mark};
 use crate::BUFFER_LENGTH;
 use heapless::String;
 
+/// Converts a morse code array to a string
 pub fn codes_to_string(codes: &[Code; BUFFER_LENGTH]) -> String<BUFFER_LENGTH> {
     let mut string = String::new();
 
@@ -25,6 +26,7 @@ pub fn codes_to_string(codes: &[Code; BUFFER_LENGTH]) -> String<BUFFER_LENGTH> {
     string
 }
 
+/// Converts a morse code array to a string of marks
 pub fn to_marks(codes: &[Code; BUFFER_LENGTH]) -> String<BUFFER_LENGTH> {
     let mut string = String::<BUFFER_LENGTH>::new();
 
@@ -58,6 +60,7 @@ pub fn to_marks(codes: &[Code; BUFFER_LENGTH]) -> String<BUFFER_LENGTH> {
     String::from(string.trim())
 }
 
+/// Converts a string to a morse code array
 pub fn string_to_codes(string: &String<BUFFER_LENGTH>) -> [Code; BUFFER_LENGTH] {
     let mut codes = [Code::None; BUFFER_LENGTH];
 

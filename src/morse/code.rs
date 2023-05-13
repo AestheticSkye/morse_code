@@ -163,6 +163,7 @@ const CODES: [(char, Code); 36] = [
 ];
 
 impl Code {
+    /// Converts a morse code to a character
     pub fn to_char(self) -> char {
         let Self::Some(marks) = self else {
             return '%'
@@ -179,6 +180,7 @@ impl Code {
         '%'
     }
 
+    /// Converts a character to a morse code
     pub fn char_to_code(character: char) -> Self {
         if character == ' ' {
             return Self::Space;
