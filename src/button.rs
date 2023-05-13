@@ -64,7 +64,7 @@ pub fn scan(
             button_on_time = 0;
         }
 
-        delay.delay_ms(100)
+        delay.delay_ms(100);
     }
 
     pin_set.leds_off();
@@ -84,7 +84,7 @@ fn button_on_event(
     *current_mark = Dot;
     if *button_on_time > LONG_PRESS_LENGTH {
         pin_set.long_press_led.set_high().unwrap();
-        *current_mark = Dash
+        *current_mark = Dash;
     }
     if *button_on_time > PASSAGE_END_LENGTH {
         pin_set.passage_end_led.set_high().unwrap();
@@ -99,7 +99,7 @@ fn button_on_event(
     pin_set.letter_led.set_low().unwrap();
 
     *button_on_time += 100;
-    *button_off_time = 0
+    *button_off_time = 0;
 }
 
 /// Handles button release event for adding mark to current letter
@@ -115,12 +115,12 @@ fn handle_mark(
     } else {
         match *current_mark {
             Dot => {
-                serial.write(".".as_bytes()).unwrap();
+                serial.write(b".").unwrap();
             }
             Dash => {
-                serial.write("-".as_bytes()).unwrap();
+                serial.write(b"-").unwrap();
             }
-            _ => {}
+            Mark::None => {}
         }
         current_code.push(*current_mark).unwrap();
     }
@@ -142,7 +142,7 @@ fn handle_letter(
     codes
         .push(Code::Some(current_code.clone().into_array().unwrap()))
         .unwrap();
-    *current_code = Vec::new()
+    *current_code = Vec::new();
 }
 
 /// Handles button release event for finishing word
@@ -152,7 +152,7 @@ fn handle_word(
     codes: &mut Vec<Code, BUFFER_LENGTH>,
 ) {
     pin_set.word_led.set_high().unwrap();
-    serial.write(" ".as_bytes()).unwrap();
+    serial.write(b" ").unwrap();
     codes.push(Code::Space).unwrap();
 }
 

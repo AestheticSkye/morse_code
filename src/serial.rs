@@ -42,51 +42,50 @@ pub fn read(
             return create_return_string("Message submitted.", buffer, serial);
         }
     }
+}
 
-    fn remove_control_chars(buffer: &mut [u8; BUFFER_LENGTH]) {
-        for char in buffer.iter_mut() {
-            if char == &b'\n' || char == &b'\r' {
-                *char = 0
+fn remove_control_chars(buffer: &mut [u8; BUFFER_LENGTH]) {
+    for char in buffer.iter_mut() {
+        if char == &b'\n' || char == &b'\r' {
+            *char = 0;
+        }
+    }
+}
+
+fn create_return_string(
+    message: &str,
+    mut buffer: [u8; BUFFER_LENGTH],
+    serial: &mut SerialPort<UsbBus>,
+) -> String<BUFFER_LENGTH> {
+    let mut string = String::<BUFFER_LENGTH>::new();
+
+    remove_control_chars(&mut buffer);
+
+    for byte in buffer {
+        if byte != 0 {
+            string.push(byte as char).unwrap();
+        }
+    }
+
+    let mut formatted_message = String::<{ BUFFER_LENGTH * 2 }>::new();
+
+    write!(
+        &mut formatted_message,
+        "\r\n{message}\r\nNow encoding '{string}' to morse.\r\n",
+    )
+    .unwrap();
+
+    // Adds space to end of string for blinking
+    for (index, byte) in buffer.iter().enumerate() {
+        if let Some(next_byte) = buffer.get(index + 1) {
+            if *next_byte == 0 && *byte != b' ' {
+                string.push(' ').unwrap();
+                break;
             }
         }
     }
 
-    fn create_return_string(
-        message: &str,
-        mut buffer: [u8; BUFFER_LENGTH],
-        serial: &mut SerialPort<UsbBus>,
-    ) -> String<BUFFER_LENGTH> {
-        let mut string = String::<BUFFER_LENGTH>::new();
+    serial.write(formatted_message.as_bytes()).unwrap();
 
-        remove_control_chars(&mut buffer);
-
-        for byte in buffer {
-            if byte != 0 {
-                string.push(byte as char).unwrap();
-            }
-        }
-
-        let mut formatted_message = String::<{ BUFFER_LENGTH * 2 }>::new();
-
-        write!(
-            &mut formatted_message,
-            "\r\n{}\r\nNow encoding '{}' to morse.\r\n",
-            message, string
-        )
-        .unwrap();
-
-        // Adds space to end of string for blinking
-        for (index, byte) in buffer.iter().enumerate() {
-            if let Some(next_byte) = buffer.get(index + 1) {
-                if *next_byte == 0 && *byte != b' ' {
-                    string.push(' ').unwrap();
-                    break;
-                }
-            }
-        }
-
-        serial.write(formatted_message.as_bytes()).unwrap();
-
-        string
-    }
+    string
 }

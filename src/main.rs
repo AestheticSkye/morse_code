@@ -1,5 +1,6 @@
 #![no_std]
 #![no_main]
+#![warn(clippy::all, clippy::pedantic, clippy::nursery)]
 
 mod button;
 mod led;
@@ -15,12 +16,12 @@ use rp_pico::{
     entry,
     hal::{self, clocks::Clock, pac, usb::UsbBus, Timer, Watchdog},
 };
-use usb_device::{class_prelude::*, prelude::*};
+use usb_device::{class_prelude::UsbBusAllocator, prelude::*};
 use usbd_serial::SerialPort;
 
 use crate::button::scan;
 use crate::led::blink_codes;
-use crate::morse::*;
+use crate::morse::{codes_to_string, string_to_codes, to_marks};
 use crate::pins::PinSet;
 use crate::serial::read;
 
@@ -99,7 +100,7 @@ fn main() -> ! {
         // No clue why this has to be done, but serial wont work without it
         if !initialised && timer.get_counter().ticks() >= 2_000_000 {
             initialised = true;
-            serial.write("Hello World!\r\n".as_bytes()).unwrap();
+            serial.write(b"Hello World!\r\n").unwrap();
         }
 
         usb_dev.poll(&mut [&mut serial]);
@@ -116,13 +117,13 @@ fn main() -> ! {
 
             loop {
                 if pin_set.button.is_high().unwrap() {
-                    current_on += 1
+                    current_on += 1;
                 } else if current_on > 300 {
-                    run_serial(&mut pin_set, &mut delay, &mut serial, &mut usb_dev)
+                    run_serial(&mut pin_set, &mut delay, &mut serial, &mut usb_dev);
                 } else if current_on > 1 {
                     run_button(&mut pin_set, &mut delay, &mut serial);
                 }
-                delay.delay_ms(1)
+                delay.delay_ms(1);
             }
         }
     }
@@ -142,7 +143,7 @@ fn run_button(pin_set: &mut PinSet, delay: &mut Delay, serial: &mut SerialPort<U
     serial.write(&[b'\n', b'\r']).unwrap();
 
     loop {
-        blink_codes(&mut pin_set.internal_led, delay, &codes)
+        blink_codes(&mut pin_set.internal_led, delay, &codes);
     }
 }
 
@@ -168,6 +169,6 @@ fn run_serial(
     serial.write(&[b'\n', b'\r', b'\n', b'\r']).unwrap();
 
     loop {
-        blink_codes(&mut pin_set.internal_led, delay, &codes)
+        blink_codes(&mut pin_set.internal_led, delay, &codes);
     }
 }

@@ -1,13 +1,13 @@
 use heapless::Vec;
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Mark {
     Dot,
     Dash,
     None,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Code {
     Some([Mark; 5]),
     Space,
@@ -164,12 +164,12 @@ const CODES: [(char, Code); 36] = [
 
 impl Code {
     pub fn to_char(self) -> char {
-        let Code::Some(marks) = self else {
+        let Self::Some(marks) = self else {
             return '%'
         };
 
         for code_set in CODES {
-            if let Code::Some(cmp_marks) = code_set.1 {
+            if let Self::Some(cmp_marks) = code_set.1 {
                 if cmp_marks == Vec::<Mark, 5>::from_slice(&marks).unwrap() {
                     return code_set.0;
                 }
@@ -179,17 +179,17 @@ impl Code {
         '%'
     }
 
-    pub fn char_to_code(character: &char) -> Code {
-        if character == &' ' {
-            return Code::Space;
+    pub fn char_to_code(character: char) -> Self {
+        if character == ' ' {
+            return Self::Space;
         }
         for code_set in CODES {
-            if let Code::Some(_) = code_set.1 {
-                if code_set.0 == *character {
+            if let Self::Some(_) = code_set.1 {
+                if code_set.0 == character {
                     return code_set.1;
                 }
             }
         }
-        Code::Error
+        Self::Error
     }
 }

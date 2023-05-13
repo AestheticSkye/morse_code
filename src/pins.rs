@@ -12,7 +12,7 @@ pub struct PinSet {
 }
 
 impl PinSet {
-    pub fn new(
+    pub const fn new(
         internal_led: DynPin,
         letter_led: DynPin,
         word_led: DynPin,
@@ -20,8 +20,8 @@ impl PinSet {
         long_press_led: DynPin,
         passage_end_led: DynPin,
         button: DynPin,
-    ) -> PinSet {
-        PinSet {
+    ) -> Self {
+        Self {
             internal_led,
             letter_led,
             word_led,
