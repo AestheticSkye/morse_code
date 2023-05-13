@@ -3,11 +3,11 @@
 runner = "elf2uf2-rs -d"
 
 rustflags = [
-  "-C", "link-arg=--nmagic",
-  "-C", "link-arg=-Tlink.x",
+	"-C", "link-arg=--nmagic",
+	"-C", "link-arg=-Tlink.x",
 
-  "-C", "inline-threshold=5",
-  "-C", "no-vectorize-loops",
+	"-C", "inline-threshold=5",
+	"-C", "no-vectorize-loops",
 ]
 
 [build]

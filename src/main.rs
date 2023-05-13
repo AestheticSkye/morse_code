@@ -13,8 +13,8 @@ use cortex_m::delay::Delay;
 use embedded_hal::digital::v2::InputPin;
 use panic_halt as _;
 use rp_pico::{
-    entry,
-    hal::{self, clocks::Clock, pac, usb::UsbBus, Timer, Watchdog},
+	entry,
+	hal::{self, clocks::Clock, pac, usb::UsbBus, Timer, Watchdog},
 };
 use usb_device::{class_prelude::UsbBusAllocator, prelude::*};
 use usbd_serial::SerialPort;
@@ -30,158 +30,158 @@ const BUFFER_LENGTH: usize = 64;
 
 #[entry]
 fn main() -> ! {
-    let mut pac = pac::Peripherals::take().unwrap();
-    let core = pac::CorePeripherals::take().unwrap();
+	let mut pac = pac::Peripherals::take().unwrap();
+	let core = pac::CorePeripherals::take().unwrap();
 
-    // Set up the watchdog driver - needed by the clock setup code
-    let mut watchdog = Watchdog::new(pac.WATCHDOG);
+	// Set up the watchdog driver - needed by the clock setup code
+	let mut watchdog = Watchdog::new(pac.WATCHDOG);
 
-    // Configure the clocks
-    //
-    // The default is to generate a 125 MHz system clock
-    let clocks = hal::clocks::init_clocks_and_plls(
-        rp_pico::XOSC_CRYSTAL_FREQ,
-        pac.XOSC,
-        pac.CLOCKS,
-        pac.PLL_SYS,
-        pac.PLL_USB,
-        &mut pac.RESETS,
-        &mut watchdog,
-    )
-    .ok()
-    .unwrap();
+	// Configure the clocks
+	//
+	// The default is to generate a 125 MHz system clock
+	let clocks = hal::clocks::init_clocks_and_plls(
+		rp_pico::XOSC_CRYSTAL_FREQ,
+		pac.XOSC,
+		pac.CLOCKS,
+		pac.PLL_SYS,
+		pac.PLL_USB,
+		&mut pac.RESETS,
+		&mut watchdog,
+	)
+	.ok()
+	.unwrap();
 
-    // Set up the USB driver
-    let usb_bus = UsbBusAllocator::new(UsbBus::new(
-        pac.USBCTRL_REGS,
-        pac.USBCTRL_DPRAM,
-        clocks.usb_clock,
-        true,
-        &mut pac.RESETS,
-    ));
+	// Set up the USB driver
+	let usb_bus = UsbBusAllocator::new(UsbBus::new(
+		pac.USBCTRL_REGS,
+		pac.USBCTRL_DPRAM,
+		clocks.usb_clock,
+		true,
+		&mut pac.RESETS,
+	));
 
-    // Set up the USB Communications Class Device driver
-    let mut serial = SerialPort::new(&usb_bus);
+	// Set up the USB Communications Class Device driver
+	let mut serial = SerialPort::new(&usb_bus);
 
-    // Create a USB device with a fake VID and PID
-    let mut usb_dev = UsbDeviceBuilder::new(&usb_bus, UsbVidPid(0x16c0, 0x27dd))
-        .manufacturer("Fake company")
-        .product("Serial port")
-        .serial_number("TEST")
-        .device_class(2) // from: https://www.usb.org/defined-class-codes
-        .build();
+	// Create a USB device with a fake VID and PID
+	let mut usb_dev = UsbDeviceBuilder::new(&usb_bus, UsbVidPid(0x16c0, 0x27dd))
+		.manufacturer("Fake company")
+		.product("Serial port")
+		.serial_number("TEST")
+		.device_class(2) // from: https://www.usb.org/defined-class-codes
+		.build();
 
-    let mut delay = Delay::new(core.SYST, clocks.system_clock.freq().to_Hz());
+	let mut delay = Delay::new(core.SYST, clocks.system_clock.freq().to_Hz());
 
-    // The single-cycle I/O block controls our GPIO pins
-    let sio = hal::Sio::new(pac.SIO);
-    // Set the pins to their default state
-    let pins = hal::gpio::Pins::new(
-        pac.IO_BANK0,
-        pac.PADS_BANK0,
-        sio.gpio_bank0,
-        &mut pac.RESETS,
-    );
+	// The single-cycle I/O block controls our GPIO pins
+	let sio = hal::Sio::new(pac.SIO);
+	// Set the pins to their default state
+	let pins = hal::gpio::Pins::new(
+		pac.IO_BANK0,
+		pac.PADS_BANK0,
+		sio.gpio_bank0,
+		&mut pac.RESETS,
+	);
 
-    let timer = Timer::new(pac.TIMER, &mut pac.RESETS);
+	let timer = Timer::new(pac.TIMER, &mut pac.RESETS);
 
-    let mut pin_set = PinSet::new(
-        pins.gpio25.into_push_pull_output().into(),
-        pins.gpio15.into_push_pull_output().into(),
-        pins.gpio14.into_push_pull_output().into(),
-        pins.gpio16.into_push_pull_output().into(),
-        pins.gpio17.into_push_pull_output().into(),
-        pins.gpio18.into_push_pull_output().into(),
-        pins.gpio13.into_pull_down_input().into(),
-    );
+	let mut pin_set = PinSet::new(
+		pins.gpio25.into_push_pull_output().into(),
+		pins.gpio15.into_push_pull_output().into(),
+		pins.gpio14.into_push_pull_output().into(),
+		pins.gpio16.into_push_pull_output().into(),
+		pins.gpio17.into_push_pull_output().into(),
+		pins.gpio18.into_push_pull_output().into(),
+		pins.gpio13.into_pull_down_input().into(),
+	);
 
-    let mut initialised = false;
+	let mut initialised = false;
 
-    loop {
-        // No clue why this has to be done, but serial wont work without it
-        if !initialised && timer.get_counter().ticks() >= 2_000_000 {
-            initialised = true;
-            serial.write(b"Hello World!\r\n").unwrap();
-        }
+	loop {
+		// No clue why this has to be done, but serial wont work without it
+		if !initialised && timer.get_counter().ticks() >= 2_000_000 {
+			initialised = true;
+			serial.write(b"Hello World!\r\n").unwrap();
+		}
 
-        usb_dev.poll(&mut [&mut serial]);
+		usb_dev.poll(&mut [&mut serial]);
 
-        if initialised {
-            let mut current_on = 0;
+		if initialised {
+			let mut current_on = 0;
 
-            serial
-                .write(b"Press button to select button mode.")
-                .unwrap();
+			serial
+				.write(b"Press button to select button mode.")
+				.unwrap();
 
-            new_line(&mut serial, &mut delay);
+			new_line(&mut serial, &mut delay);
 
-            serial.write(b"Hold button to select serial mode.").unwrap();
+			serial.write(b"Hold button to select serial mode.").unwrap();
 
-            new_line(&mut serial, &mut delay);
+			new_line(&mut serial, &mut delay);
 
-            loop {
-                if pin_set.button.is_high().unwrap() {
-                    current_on += 1;
-                    if current_on == 300 {
-                        serial.write(b"Serial mode selected.\n\r").unwrap();
-                    }
-                } else if current_on > 300 {
-                    run_serial(&mut pin_set, &mut delay, &mut serial, &mut usb_dev);
-                } else if current_on > 0 {
-                    serial.write(b"Button mode selected.\n\r").unwrap();
-                    run_button(&mut pin_set, &mut delay, &mut serial);
-                }
-                delay.delay_ms(1);
-            }
-        }
-    }
+			loop {
+				if pin_set.button.is_high().unwrap() {
+					current_on += 1;
+					if current_on == 300 {
+						serial.write(b"Serial mode selected.\n\r").unwrap();
+					}
+				} else if current_on > 300 {
+					run_serial(&mut pin_set, &mut delay, &mut serial, &mut usb_dev);
+				} else if current_on > 0 {
+					serial.write(b"Button mode selected.\n\r").unwrap();
+					run_button(&mut pin_set, &mut delay, &mut serial);
+				}
+				delay.delay_ms(1);
+			}
+		}
+	}
 }
 
 fn run_button(pin_set: &mut PinSet, delay: &mut Delay, serial: &mut SerialPort<UsbBus>) {
-    serial
-        .write(b"Please press the button to start your message\r\n")
-        .unwrap();
+	serial
+		.write(b"Please press the button to start your message\r\n")
+		.unwrap();
 
-    while pin_set.button.is_low().unwrap() {}
+	while pin_set.button.is_low().unwrap() {}
 
-    let codes = scan(pin_set, delay, serial);
+	let codes = scan(pin_set, delay, serial);
 
-    new_line(serial, delay);
+	new_line(serial, delay);
 
-    serial.write(codes_to_string(&codes).as_bytes()).unwrap();
+	serial.write(codes_to_string(&codes).as_bytes()).unwrap();
 
-    new_line(serial, delay);
+	new_line(serial, delay);
 
-    loop {
-        blink_codes(&mut pin_set.internal_led, delay, &codes);
-    }
+	loop {
+		blink_codes(&mut pin_set.internal_led, delay, &codes);
+	}
 }
 
 fn run_serial(
-    pin_set: &mut PinSet,
-    delay: &mut Delay,
-    serial: &mut SerialPort<UsbBus>,
-    usb_dev: &mut UsbDevice<UsbBus>,
+	pin_set: &mut PinSet,
+	delay: &mut Delay,
+	serial: &mut SerialPort<UsbBus>,
+	usb_dev: &mut UsbDevice<UsbBus>,
 ) {
-    serial
-        .write(b"Please enter the text you wish to encode into morse.\r\n")
-        .unwrap();
+	serial
+		.write(b"Please enter the text you wish to encode into morse.\r\n")
+		.unwrap();
 
-    let converted_text = read(usb_dev, serial);
+	let converted_text = read(usb_dev, serial);
 
-    let codes = string_to_codes(&converted_text);
+	let codes = string_to_codes(&converted_text);
 
-    serial.write(to_marks(&codes).as_bytes()).unwrap();
+	serial.write(to_marks(&codes).as_bytes()).unwrap();
 
-    new_line(serial, delay);
+	new_line(serial, delay);
 
-    loop {
-        blink_codes(&mut pin_set.internal_led, delay, &codes);
-    }
+	loop {
+		blink_codes(&mut pin_set.internal_led, delay, &codes);
+	}
 }
 
 fn new_line(serial: &mut SerialPort<UsbBus>, delay: &mut Delay) {
-    // Delays buy smallest time possible as without sometimes serial doesnt write properly
-    delay.delay_ms(1);
-    serial.write(&[b'\n', b'\r']).unwrap();
+	// Delays buy smallest time possible as without sometimes serial doesnt write properly
+	delay.delay_ms(1);
+	serial.write(&[b'\n', b'\r']).unwrap();
 }
