@@ -56,7 +56,7 @@ pub fn scan(
 		} else {
 			if passage_ended {
 				if !current_code.is_empty() {
-					handle_letter(&mut codes, &mut current_code, pin_set);
+					handle_letter(&mut codes, &mut current_code, pin_set, serial);
 				}
 				break;
 			}
@@ -66,7 +66,7 @@ pub fn scan(
 			}
 
 			if button_off_time == LETTER_TIME_LENGTH {
-				handle_letter(&mut codes, &mut current_code, pin_set);
+				handle_letter(&mut codes, &mut current_code, pin_set, serial);
 			}
 
 			if button_off_time == WORD_TIME_LENGTH {
@@ -147,6 +147,7 @@ fn handle_letter(
 	codes: &mut Vec<Code, BUFFER_LENGTH>,
 	current_code: &mut Vec<Mark, 5>,
 	pin_set: &mut PinSet,
+	serial: &mut SerialPort<UsbBus>,
 ) {
 	pin_set.letter_led.set_high().unwrap();
 
@@ -159,6 +160,8 @@ fn handle_letter(
 		.push(Code::Some(current_code.clone().into_array().unwrap()))
 		.unwrap();
 	*current_code = Vec::new();
+
+	serial.write(b" ").unwrap();
 }
 
 /// Handles button release event for finishing word
@@ -168,7 +171,7 @@ fn handle_word(
 	codes: &mut Vec<Code, BUFFER_LENGTH>,
 ) {
 	pin_set.word_led.set_high().unwrap();
-	serial.write(b" ").unwrap();
+	serial.write(b"  ").unwrap();
 	codes.push(Code::Space).unwrap();
 }
 
