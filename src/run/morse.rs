@@ -29,40 +29,6 @@ pub fn codes_to_string(codes: &[Code; BUFFER_LENGTH]) -> String<BUFFER_LENGTH> {
 	string
 }
 
-/// Converts a morse code array to a string of marks
-pub fn to_marks(codes: &[Code; BUFFER_LENGTH]) -> String<BUFFER_LENGTH> {
-	let mut string = String::<BUFFER_LENGTH>::new();
-
-	for code in codes {
-		match code {
-			Code::Some(code) => {
-				for byte in code {
-					match byte {
-						Mark::Dot => {
-							string.push('.').unwrap();
-						}
-						Mark::Dash => {
-							string.push('-').unwrap();
-						}
-						Mark::None => {}
-					}
-				}
-				string.push(' ').unwrap();
-			}
-			Code::Space => {
-				string.push(' ').unwrap();
-				string.push(' ').unwrap();
-			}
-			Code::Error => {
-				string.push('%').unwrap();
-			}
-			Code::None => {}
-		}
-	}
-
-	String::from(string.trim())
-}
-
 /// Converts a string to a morse code array
 pub fn string_to_codes(string: &String<BUFFER_LENGTH>) -> [Code; BUFFER_LENGTH] {
 	let mut codes = [Code::None; BUFFER_LENGTH];

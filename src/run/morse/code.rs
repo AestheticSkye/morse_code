@@ -1,4 +1,4 @@
-use heapless::Vec;
+use heapless::{String, Vec};
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Mark {
@@ -193,5 +193,36 @@ impl Code {
 			}
 		}
 		Self::Error
+	}
+	/// Converts a morse code array to a string of marks
+	pub fn to_marks(&self) -> String<5> {
+		let mut string = String::<5>::new();
+
+		match self {
+			Code::Some(code) => {
+				for mark in code {
+					match mark {
+						Mark::Dot => {
+							string.push('.').unwrap();
+						}
+						Mark::Dash => {
+							string.push('-').unwrap();
+						}
+						Mark::None => {}
+					}
+				}
+				string.push(' ').unwrap();
+			}
+			Code::Space => {
+				string.push(' ').unwrap();
+				string.push(' ').unwrap();
+			}
+			Code::Error => {
+				string.push('%').unwrap();
+			}
+			Code::None => {}
+		}
+
+		String::from(string.trim())
 	}
 }

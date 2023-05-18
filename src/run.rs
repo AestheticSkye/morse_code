@@ -15,7 +15,7 @@ use crate::{
 	run::{
 		button::scan,
 		led::blink_codes,
-		morse::{codes_to_string, string_to_codes, to_marks},
+		morse::{codes_to_string, string_to_codes},
 		serial::read,
 	},
 };
@@ -54,7 +54,11 @@ pub fn serial_mode(
 
 	let codes = string_to_codes(&converted_text);
 
-	serial.write(to_marks(&codes).as_bytes()).unwrap();
+	delay.delay_ms(200);
+
+	for code in codes {
+		serial.write(code.to_marks().as_bytes()).unwrap();
+	}
 
 	new_line(serial, delay);
 
