@@ -195,11 +195,11 @@ impl Code {
 		Self::Error
 	}
 	/// Converts a morse code array to a string of marks
-	pub fn to_marks(&self) -> String<5> {
-		let mut string = String::<5>::new();
+	pub fn to_marks(self) -> String<20> {
+		let mut string = String::<20>::new();
 
 		match self {
-			Code::Some(code) => {
+			Self::Some(code) => {
 				for mark in code {
 					match mark {
 						Mark::Dot => {
@@ -213,14 +213,14 @@ impl Code {
 				}
 				string.push(' ').unwrap();
 			}
-			Code::Space => {
+			Self::Space => {
 				string.push(' ').unwrap();
 				string.push(' ').unwrap();
 			}
-			Code::Error => {
+			Self::Error => {
 				string.push('%').unwrap();
 			}
-			Code::None => {}
+			Self::None => {}
 		}
 
 		String::from(string.trim())

@@ -9,6 +9,7 @@ use rp2040_hal::usb::UsbBus;
 use usb_device::device::UsbDevice;
 use usbd_serial::SerialPort;
 
+use crate::run::morse::code::Code;
 use crate::{
 	new_line,
 	pins::PinSet,
@@ -54,11 +55,18 @@ pub fn serial_mode(
 
 	let codes = string_to_codes(&converted_text);
 
-	delay.delay_ms(200);
+	delay.delay_ms(1);
 
 	for code in codes {
-		serial.write(code.to_marks().as_bytes()).unwrap();
+		if code != Code::None {
+			serial.write(code.to_marks().as_bytes()).unwrap();
+			delay.delay_ms(1);
+			serial.write(b" ").unwrap();
+			delay.delay_ms(1);
+		}
 	}
+
+	serial.flush().unwrap();
 
 	new_line(serial, delay);
 

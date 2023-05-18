@@ -1,5 +1,4 @@
 use core::fmt::Write;
-
 use heapless::String;
 use rp2040_hal::usb::UsbBus;
 use usb_device::device::UsbDevice;
@@ -46,10 +45,10 @@ pub fn read(
 			}
 		}
 		if buffer.len() == buffer_index {
-			return create_return_string("Buffer length reached.", buffer, serial);
+			return create_return_string("Buffer length reached.", buffer, buffer_index, serial);
 		}
 		if buffer.contains(&b'\n') || buffer.contains(&b'\r') {
-			return create_return_string("Message submitted.", buffer, serial);
+			return create_return_string("Message submitted.", buffer, buffer_index, serial);
 		}
 	}
 }
@@ -66,6 +65,7 @@ pub fn read(
 fn create_return_string(
 	message: &str,
 	mut buffer: [u8; BUFFER_LENGTH],
+	buffer_index: usize,
 	serial: &mut SerialPort<UsbBus>,
 ) -> String<BUFFER_LENGTH> {
 	let mut string = String::<BUFFER_LENGTH>::new();
@@ -89,17 +89,14 @@ fn create_return_string(
 	)
 	.unwrap();
 
-	// Adds space to end of string for blinking
-	for (index, byte) in buffer.iter().enumerate() {
-		if let Some(next_byte) = buffer.get(index + 1) {
-			if *next_byte == 0 && *byte != b' ' {
-				string.push(' ').unwrap();
-				break;
-			}
-		}
-	}
+	serial.flush().unwrap();
 
 	serial.write(formatted_message.as_bytes()).unwrap();
+
+	// Adds space to end of string for blinking
+	if buffer.last().unwrap_or(&0) == &0 && buffer_index != BUFFER_LENGTH {
+		buffer[buffer_index + 1] = b' ';
+	}
 
 	string
 }

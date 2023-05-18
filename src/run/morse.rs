@@ -2,10 +2,7 @@ pub mod code;
 
 use heapless::String;
 
-use crate::{
-	run::morse::code::{Code, Mark},
-	BUFFER_LENGTH,
-};
+use crate::{run::morse::code::Code, BUFFER_LENGTH};
 
 /// Converts a morse code array to a string
 pub fn codes_to_string(codes: &[Code; BUFFER_LENGTH]) -> String<BUFFER_LENGTH> {
