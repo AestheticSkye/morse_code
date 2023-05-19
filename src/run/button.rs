@@ -52,6 +52,10 @@ pub fn scan(
 				pin_set,
 			);
 		} else {
+			if current_code.is_full() {
+				serial.write(b"Buffer is full").unwrap();
+				break;
+			}
 			if passage_ended {
 				if !current_code.is_empty() {
 					handle_letter(&mut codes, &mut current_code, pin_set, serial);
