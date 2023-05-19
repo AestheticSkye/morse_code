@@ -5,12 +5,12 @@ A utility for the raspberry pi pico that allows for conversion of text to morse 
 
 With serial monitor connected, press the button once to activate button mode, then encode your words by pressing a button for a dot and holding for a dash, then release until 1 yellow light turns on to finish a letter. Release the button until 2 yellow lights turn on to finish a word. To finish the message hold the button until the red light turns on.
 
-[Button Mode Example](assets/videos/button%20mode.mp4)
+[Button Mode Example](assets/videos/button_mode.mp4)
 
 ### Serial Mode
 With serial monitor connected, hold button until you receive serial mode prompt. Then type your message into the serial monitor finishing with a return.
 
-[Serial Mode Example](assets/videos/serial%20mode.mp4)
+[Serial Mode Example](assets/videos/serial_mode.mp4)
 ## Pin-out
 - 🔴 Gpio 18
 - 🟡 Gpio 17
