@@ -67,7 +67,7 @@ fn main() -> ! {
 }
 
 fn new_line(serial: &mut SerialPort<UsbBus>, delay: &mut Delay) {
-	// Delays buy smallest time possible as without sometimes serial doesnt write properly
+	// Serial often needs delay beforehand or else it doesn't write properly ¯\_(ツ)_/¯
 	delay.delay_ms(1);
 	serial.write(&[b'\n', b'\r']).unwrap();
 }
