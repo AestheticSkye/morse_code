@@ -18,7 +18,7 @@ const TIME_UNIT: u32 = 200;
 pub fn blink_codes(led: &mut DynPin, delay: &mut Delay, codes: &[Code; BUFFER_LENGTH]) {
 	for code in codes {
 		match code {
-			Code::Some(code) => {
+			Code::Letter(code) => {
 				for mark in code {
 					match mark {
 						Mark::Dot => {

@@ -10,7 +10,7 @@ pub fn codes_to_string(codes: &[Code; BUFFER_LENGTH]) -> String<BUFFER_LENGTH> {
 
 	for code in codes {
 		match code {
-			Code::Some(_) => {
+			Code::Letter(_) => {
 				string.push(code.to_char()).unwrap();
 			}
 			Code::Space => {

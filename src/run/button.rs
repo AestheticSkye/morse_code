@@ -159,7 +159,7 @@ fn handle_letter(
 	}
 
 	codes
-		.push(Code::Some(current_code.clone().into_array().unwrap()))
+		.push(Code::Letter(current_code.clone().into_array().unwrap()))
 		.unwrap();
 	*current_code = Vec::new();
 
