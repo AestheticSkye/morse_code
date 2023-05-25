@@ -52,7 +52,7 @@ pub fn scan(
 				pin_set,
 			);
 		} else {
-			if current_code.is_full() {
+			if codes.is_full() {
 				serial.write(b"Buffer is full").unwrap();
 				break;
 			}
@@ -130,18 +130,17 @@ fn handle_mark(
 	if current_code.is_full() {
 		codes.push(Code::Error).unwrap();
 		*current_code = Vec::new();
-	} else {
-		match *current_mark {
-			Dot => {
-				serial.write(b".").unwrap();
-			}
-			Dash => {
-				serial.write(b"-").unwrap();
-			}
-			Mark::None => {}
-		}
-		current_code.push(*current_mark).unwrap();
 	}
+	match *current_mark {
+		Dot => {
+			serial.write(b".").unwrap();
+		}
+		Dash => {
+			serial.write(b"-").unwrap();
+		}
+		Mark::None => {}
+	}
+	current_code.push(*current_mark).unwrap();
 }
 
 /// Handles button release event for finishing letter
